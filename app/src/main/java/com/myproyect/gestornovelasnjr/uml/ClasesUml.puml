@@ -1,0 +1,100 @@
+@startuml
+class MainActivity {
+    - Button buttonAddBook
+    - Button buttonSyncData
+    - RecyclerView recyclerView
+    - NovelAdapter novelAdapter
+    - NovelViewModel novelViewModel
+    - BroadcastReceiver syncReceiver
+    + void onCreate(Bundle savedInstanceState)
+    - void scheduleSyncAlarm()
+    - void showAddNovelDialog()
+}
+
+class NovelViewModel {
+    - NovelRepository repository
+    - LiveData<List<Novel>> allNovels
+    + void insert(Novel novel)
+    + void delete(Novel novel)
+    + LiveData<List<Novel>> getAllNovels()
+    + void syncNovels()
+}
+
+class NovelRepository {
+    - FirebaseFirestore db
+    - CollectionReference novelCollection
+    + LiveData<List<Novel>> getAllNovels()
+    + void insert(Novel novel)
+    + void delete(Novel novel)
+    + void syncNovels()
+}
+
+class NovelLoader {
+    - NovelRepository repository
+    + NovelLoader(Context context)
+    + List<Novel> loadInBackground()
+}
+
+class Novel {
+    - String id
+    - String title
+    - String author
+    - int year
+    - String synopsis
+    - boolean favorite
+    + Getters and Setters
+}
+
+class NovelAdapter {
+    - List<Novel> novels
+    - OnDeleteClickListener deleteListener
+    - Context context
+    - FirebaseFirestore db
+    + void setNovels(List<Novel> novels)
+    + void updateFavoriteStatus(Novel novel)
+}
+
+interface OnDeleteClickListener {
+    + void onDeleteClick(Novel novel)
+}
+
+class SyncDataTask {
+    - Context context
+    - FirebaseFirestore db
+    + SyncDataTask(Context context)
+    + Void doInBackground(Void... voids)
+}
+
+class SyncDataReceiver {
+    + void onReceive(Context context, Intent intent)
+}
+
+class SyncAlarmReceiver {
+    + void onReceive(Context context, Intent intent)
+}
+
+class ConnectivityReceiver {
+    + void onReceive(Context context, Intent intent)
+}
+
+class NotificationHelper {
+    + static void showNotification(Context context, String title, String content)
+}
+
+class NetworkUtil {
+    + static boolean isConnectedToWifi(Context context)
+}
+
+MainActivity --> NovelViewModel
+MainActivity --> NovelAdapter
+MainActivity o--> BroadcastReceiver : registers
+NovelViewModel --> NovelRepository
+NovelLoader --> NovelRepository
+NovelAdapter --> Novel
+NovelAdapter ..> FirebaseFirestore
+SyncDataTask ..> FirebaseFirestore
+SyncDataReceiver --> NotificationHelper
+SyncAlarmReceiver --> SyncDataTask
+ConnectivityReceiver --> SyncDataTask
+NetworkUtil ..> ConnectivityManager
+@enduml
