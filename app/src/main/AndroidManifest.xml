@@ -1,10 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     package="com.myproyect.gestornovelasnjr">
 
     <!-- Permisos necesarios -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+
+
 
     <application
         android:allowBackup="true"
@@ -54,6 +58,18 @@
         <receiver
             android:name=".gestor_novelas.Sync.SyncDataReceiver"
             android:exported="false"/>
+
+        <!-- Receptor para el widget de la aplicación -->
+        <receiver
+            android:name=".gestor_novelas.NewAppWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/appwidget_provider_info" />
+        </receiver>
 
     </application>
 
