@@ -14,6 +14,7 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.myproyect.gestornovelasnjr.R;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.myproyect.gestornovelasnjr.gestor_novelas.MainActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,10 +26,30 @@ public class NovelAdapter extends RecyclerView.Adapter<NovelAdapter.NovelHolder>
     private Context context;
     private FirebaseFirestore db;
 
-    public NovelAdapter(Context context, OnDeleteClickListener deleteListener) {
+
+    public interface OnDeleteClickListener {
+        void onDeleteClick(Novel novel);
+    }
+
+
+
+    public interface OnItemClickListener {
+        void onItemSelected(Novel novel);
+    }
+
+
+
+    private OnItemClickListener itemClickListener;
+
+
+    public NovelAdapter(Context context, OnDeleteClickListener deleteListener, OnItemClickListener itemClickListener) {
         this.context = context;
         this.deleteListener = deleteListener;
+        this.itemClickListener = itemClickListener;
         db = FirebaseFirestore.getInstance();
+    }
+
+    public NovelAdapter(MainActivity context, OnDeleteClickListener onDeleteClickListener) {
     }
 
     @NonNull
@@ -50,6 +71,12 @@ public class NovelAdapter extends RecyclerView.Adapter<NovelAdapter.NovelHolder>
         } else {
             holder.buttonFavorite.setImageResource(android.R.drawable.btn_star_big_off); // Estrella vacía
         }
+
+        holder.itemView.setOnClickListener(v -> {
+            if (itemClickListener != null) {
+                itemClickListener.onItemSelected(currentNovel);
+            }
+        });
 
         holder.buttonDelete.setOnClickListener(v -> {
             deleteListener.onDeleteClick(currentNovel);
@@ -134,7 +161,5 @@ public class NovelAdapter extends RecyclerView.Adapter<NovelAdapter.NovelHolder>
         }
     }
 
-    public interface OnDeleteClickListener {
-        void onDeleteClick(Novel novel);
-    }
+
 }

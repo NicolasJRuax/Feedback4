@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.myproyect.gestornovelasnjr.R;
+import com.myproyect.gestornovelasnjr.gestor_novelas.Fragments.NovelListFragment;
 import com.myproyect.gestornovelasnjr.gestor_novelas.Novelas.Novel;
 import com.myproyect.gestornovelasnjr.gestor_novelas.Novelas.NovelAdapter;
 import com.myproyect.gestornovelasnjr.gestor_novelas.Sync.SyncAlarmReceiver;
@@ -47,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
         alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, triggerAtMillis, interval, pendingIntent);
     }
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         ThemeUtils.applyDarkMode(this);
@@ -67,6 +70,13 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, SettingActivity.class);
             startActivity(intent);
         });
+
+        if (savedInstanceState == null) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, new NovelListFragment())
+                    .commit();
+        }
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setHasFixedSize(true);

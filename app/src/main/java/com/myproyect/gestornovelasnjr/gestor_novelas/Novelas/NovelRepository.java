@@ -18,6 +18,30 @@ public class NovelRepository {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference novelCollection = db.collection("novels");
 
+    public LiveData<List<Novel>> getFavoriteNovels() {
+        MutableLiveData<List<Novel>> novelsLiveData = new MutableLiveData<>();
+
+        novelCollection.whereEqualTo("favorite", true)
+                .addSnapshotListener((querySnapshot, e) -> {
+                    if (e != null) {
+                        Log.e("Firestore", "Listen failed.", e);
+                        return;
+                    }
+
+                    if (querySnapshot != null) {
+                        List<Novel> novels = new ArrayList<>();
+                        for (DocumentSnapshot document : querySnapshot.getDocuments()) {
+                            Novel novel = document.toObject(Novel.class);
+                            novels.add(novel);
+                        }
+                        novelsLiveData.setValue(novels);
+                    }
+                });
+
+        return novelsLiveData;
+    }
+
+
     // Método para obtener todas las novelas
     public LiveData<List<Novel>> getAllNovels() {
         MutableLiveData<List<Novel>> novelsLiveData = new MutableLiveData<>();

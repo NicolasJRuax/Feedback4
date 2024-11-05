@@ -1,11 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.myproyect.gestornovelasnjr">
 
-    <!-- Permisos necesarios -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
 
 
@@ -18,7 +19,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.DayNight.DarkActionBar">
 
-        <!-- Actividad principal, lanzada desde el launcher -->
         <activity
             android:name=".gestor_novelas.MainActivity"
             android:exported="true">
@@ -28,19 +28,16 @@
             </intent-filter>
         </activity>
 
-        <!-- Actividad de configuración interna de la app -->
         <activity
             android:name=".gestor_novelas.SettingActivity"
             android:exported="false">
         </activity>
 
-        <!-- Actividad para agregar novelas, interna a la app -->
         <activity
             android:name=".gestor_novelas.DB.AddNovelActivity"
             android:exported="false">
         </activity>
 
-        <!-- Receptor de conectividad, exportado para recibir eventos del sistema -->
         <receiver
             android:name=".gestor_novelas.Sync.ConnectivityReceiver"
             android:exported="true">
@@ -49,26 +46,28 @@
             </intent-filter>
         </receiver>
 
-        <!-- Receptor para alarmas de sincronización, no exportado -->
         <receiver
             android:name=".gestor_novelas.Sync.SyncAlarmReceiver"
             android:exported="false" />
 
-        <!-- Receptor de datos de sincronización, no exportado -->
         <receiver
             android:name=".gestor_novelas.Sync.SyncDataReceiver"
-            android:exported="false"/>
+            android:exported="false" />
 
-        <!-- Receptor para el widget de la aplicación -->
-        <receiver
-            android:name=".gestor_novelas.NewAppWidget"
+        <service
+            android:name=".gestor_novelas.FavoriteNovelsWidgetService"
+            android:permission="android.permission.BIND_REMOTEVIEWS"
+            tools:ignore="WrongManifestParent" />
+
+        <!-- Registro del Widget -->
+        <receiver android:name=".gestor_novelas.NovelAppWidget"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/appwidget_provider_info" />
+                android:resource="@xml/novel_appwidget_info" />
         </receiver>
 
     </application>
