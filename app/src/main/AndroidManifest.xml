@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.myproyect.gestornovelasnjr">
 
     <!-- Permisos necesarios -->
@@ -16,7 +17,9 @@
         android:label="Gestor de Novelas"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.DayNight.DarkActionBar">
+        android:enableOnBackInvokedCallback="true"
+        android:theme="@style/Theme.AppCompat.DayNight.DarkActionBar"
+        tools:targetApi="tiramisu">
 
         <!-- Actividad principal, lanzada desde el launcher -->
         <activity

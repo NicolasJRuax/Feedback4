@@ -16,23 +16,18 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import com.myproyect.gestornovelasnjr.R;
+import com.myproyect.gestornovelasnjr.gestor_novelas.Fragments.NovelDetailFragment;
+import com.myproyect.gestornovelasnjr.gestor_novelas.Fragments.NovelListFragment;
 import com.myproyect.gestornovelasnjr.gestor_novelas.Novelas.Novel;
-import com.myproyect.gestornovelasnjr.gestor_novelas.Novelas.NovelAdapter;
+import com.myproyect.gestornovelasnjr.gestor_novelas.Novelas.NovelViewModel;
 import com.myproyect.gestornovelasnjr.gestor_novelas.Sync.SyncAlarmReceiver;
 import com.myproyect.gestornovelasnjr.gestor_novelas.Sync.SyncDataTask;
-import com.myproyect.gestornovelasnjr.gestor_novelas.Novelas.NovelViewModel;
-
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NovelListFragment.OnNovelSelectedListener {
 
     private Button buttonAddBook, buttonSyncData, buttonSettings;
-    private RecyclerView recyclerView;
-    private NovelAdapter novelAdapter;
     private NovelViewModel novelViewModel;
     private BroadcastReceiver syncReceiver;
 
@@ -55,33 +50,27 @@ public class MainActivity extends AppCompatActivity {
 
         buttonAddBook = findViewById(R.id.buttonAddBook);
         buttonSyncData = findViewById(R.id.buttonSyncData);
-        buttonSettings = findViewById(R.id.buttonSettings); // Botón de configuración
-        recyclerView = findViewById(R.id.recyclerView);
+        buttonSettings = findViewById(R.id.buttonSettings);
 
         buttonAddBook.setOnClickListener(v -> showAddNovelDialog());
+
         buttonSyncData.setOnClickListener(v -> {
             Toast.makeText(MainActivity.this, "Sincronizando datos...", Toast.LENGTH_SHORT).show();
             new SyncDataTask(MainActivity.this).execute();
         });
+
         buttonSettings.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, SettingActivity.class);
             startActivity(intent);
         });
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setHasFixedSize(true);
-        novelAdapter = new NovelAdapter(this, novel -> {
-            novelViewModel.delete(novel);
-            Toast.makeText(this, "Novela eliminada: " + novel.getTitle(), Toast.LENGTH_SHORT).show();
-        });
-        recyclerView.setAdapter(novelAdapter);
-
         novelViewModel = new ViewModelProvider(this).get(NovelViewModel.class);
-        novelViewModel.getAllNovels().observe(this, novels -> {
-            if (novels != null) {
-                novelAdapter.setNovels(novels);
-            }
-        });
+
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container_view, new NovelListFragment())
+                    .commit();
+        }
 
         syncReceiver = new BroadcastReceiver() {
             @Override
@@ -89,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
                 if (intent != null && intent.hasExtra("novels")) {
                     ArrayList<Novel> syncedNovels = intent.getParcelableArrayListExtra("novels");
                     if (syncedNovels != null) {
-                        novelAdapter.setNovels(syncedNovels);
+                        // Update UI if necessary
                     }
                     Toast.makeText(context, "Sincronización completada", Toast.LENGTH_SHORT).show();
                     scheduleSyncAlarm();
@@ -107,6 +96,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(syncReceiver);
+    }
+
+    @Override
+    public void onNovelSelected(Novel novel) {
+        NovelDetailFragment detailFragment = NovelDetailFragment.newInstance(novel);
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container_view, detailFragment)
+                .addToBackStack(null)
+                .commit();
     }
 
     private void showAddNovelDialog() {
@@ -146,5 +145,3 @@ public class MainActivity extends AppCompatActivity {
         builder.create().show();
     }
 }
-
-

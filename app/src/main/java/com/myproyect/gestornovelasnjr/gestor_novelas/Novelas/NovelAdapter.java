@@ -7,14 +7,10 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.appcompat.app.AlertDialog;
-
 import com.myproyect.gestornovelasnjr.R;
 import com.google.firebase.firestore.FirebaseFirestore;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,12 +18,18 @@ public class NovelAdapter extends RecyclerView.Adapter<NovelAdapter.NovelHolder>
 
     private List<Novel> novels = new ArrayList<>();
     private OnDeleteClickListener deleteListener;
+    private OnItemClickListener itemClickListener;
     private Context context;
     private FirebaseFirestore db;
 
-    public NovelAdapter(Context context, OnDeleteClickListener deleteListener) {
+    public interface OnItemClickListener {
+        void onItemClick(Novel novel);
+    }
+
+    public NovelAdapter(Context context, OnDeleteClickListener deleteListener, OnItemClickListener itemClickListener) {
         this.context = context;
         this.deleteListener = deleteListener;
+        this.itemClickListener = itemClickListener;
         db = FirebaseFirestore.getInstance();
     }
 
@@ -44,44 +46,40 @@ public class NovelAdapter extends RecyclerView.Adapter<NovelAdapter.NovelHolder>
         holder.textViewTitle.setText(currentNovel.getTitle());
         holder.textViewAuthor.setText(currentNovel.getAuthor());
 
-        // Actualizar el ícono del botón de favoritos según el estado
+        // Update favorite icon
         if (currentNovel.isFavorite()) {
-            holder.buttonFavorite.setImageResource(android.R.drawable.btn_star_big_on); // Estrella llena
+            holder.buttonFavorite.setImageResource(android.R.drawable.btn_star_big_on);
         } else {
-            holder.buttonFavorite.setImageResource(android.R.drawable.btn_star_big_off); // Estrella vacía
+            holder.buttonFavorite.setImageResource(android.R.drawable.btn_star_big_off);
         }
+
+        holder.itemView.setOnClickListener(v -> {
+            if (itemClickListener != null) {
+                itemClickListener.onItemClick(currentNovel);
+            }
+        });
 
         holder.buttonDelete.setOnClickListener(v -> {
             deleteListener.onDeleteClick(currentNovel);
         });
 
-        // Botón de ver detalles
-        holder.buttonDetails.setOnClickListener(v -> {
-            new AlertDialog.Builder(context)
-                    .setTitle(currentNovel.getTitle())
-                    .setMessage("Autor: " + currentNovel.getAuthor()
-                            + "\nAño: " + currentNovel.getYear()
-                            + "\nSinopsis: " + currentNovel.getSynopsis())
-                    .setPositiveButton("Cerrar", null)
-                    .show();
-        });
-
-        // Botón de favorito
         holder.buttonFavorite.setOnClickListener(v -> {
-            // Cambiar el estado de favorito
             boolean isFavorite = !currentNovel.isFavorite();
             currentNovel.setFavorite(isFavorite);
-
-            // Actualizar en Firestore
             updateFavoriteStatus(currentNovel);
 
-            // Actualizar el ícono
             if (isFavorite) {
-                holder.buttonFavorite.setImageResource(android.R.drawable.btn_star_big_on); // Estrella llena
+                holder.buttonFavorite.setImageResource(android.R.drawable.btn_star_big_on);
                 Toast.makeText(context, currentNovel.getTitle() + " añadido a favoritos", Toast.LENGTH_SHORT).show();
             } else {
-                holder.buttonFavorite.setImageResource(android.R.drawable.btn_star_big_off); // Estrella vacía
+                holder.buttonFavorite.setImageResource(android.R.drawable.btn_star_big_off);
                 Toast.makeText(context, currentNovel.getTitle() + " eliminado de favoritos", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        holder.buttonDetails.setOnClickListener(v -> {
+            if (itemClickListener != null) {
+                itemClickListener.onItemClick(currentNovel);
             }
         });
     }
@@ -97,18 +95,16 @@ public class NovelAdapter extends RecyclerView.Adapter<NovelAdapter.NovelHolder>
     }
 
     private void updateFavoriteStatus(Novel novel) {
-        // Usamos el ID del documento para actualizar directamente
         if (novel.getId() != null) {
             db.collection("novels").document(novel.getId())
                     .update("favorite", novel.isFavorite())
                     .addOnSuccessListener(aVoid -> {
-                        // Éxito al actualizar
+                        // Success
                     })
                     .addOnFailureListener(e -> {
                         Toast.makeText(context, "Error al actualizar favorito", Toast.LENGTH_SHORT).show();
                     });
         } else {
-            // Manejar el caso en que el ID es nulo
             Toast.makeText(context, "No se pudo actualizar el estado de favorito", Toast.LENGTH_SHORT).show();
         }
     }
@@ -128,7 +124,7 @@ public class NovelAdapter extends RecyclerView.Adapter<NovelAdapter.NovelHolder>
             buttonFavorite = itemView.findViewById(R.id.buttonFavorite);
             buttonDetails = itemView.findViewById(R.id.buttonDetails);
 
-            // Asignar iconos integrados a los botones
+            // Assign icons to buttons
             buttonDelete.setImageResource(android.R.drawable.ic_menu_delete);
             buttonDetails.setImageResource(android.R.drawable.ic_menu_info_details);
         }
