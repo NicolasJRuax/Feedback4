@@ -62,9 +62,25 @@
             android:name=".gestor_novelas.Sync.SyncDataReceiver"
             android:exported="false"/>
 
+        <receiver
+            android:name=".gestor_novelas.Widget.NewAppWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/appwidget_provider_info" />
+        </receiver>
+
+        <service
+            android:name=".gestor_novelas.Widget.WidgetService"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
+
         <!-- Receptor para el widget de la aplicación -->
         <receiver
-            android:name=".gestor_novelas.NewAppWidget"
+            android:name=".gestor_novelas.Widget.NewAppWidget"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
