@@ -1,100 +1,121 @@
 @startuml
-class MainActivity {
-    - Button buttonAddBook
-    - Button buttonSyncData
-    - RecyclerView recyclerView
-    - NovelAdapter novelAdapter
-    - NovelViewModel novelViewModel
-    - BroadcastReceiver syncReceiver
-    + void onCreate(Bundle savedInstanceState)
-    - void scheduleSyncAlarm()
-    - void showAddNovelDialog()
-}
+package "gestor_novelas" {
 
-class NovelViewModel {
-    - NovelRepository repository
-    - LiveData<List<Novel>> allNovels
-    + void insert(Novel novel)
-    + void delete(Novel novel)
-    + LiveData<List<Novel>> getAllNovels()
-    + void syncNovels()
-}
+    package DB {
+        class AddNovelActivity {
+            - EditText editTextTitle
+            - EditText editTextAuthor
+            - EditText editTextYear
+            - EditText editTextSynopsis
+            - Button buttonAddNovel
+            - NovelDAO novelDAO
+        }
 
-class NovelRepository {
-    - FirebaseFirestore db
-    - CollectionReference novelCollection
-    + LiveData<List<Novel>> getAllNovels()
-    + void insert(Novel novel)
-    + void delete(Novel novel)
-    + void syncNovels()
-}
+        class NovelDAO {
+            + addNovel(Novel, OnCompleteListener<Void>): void
+            + deleteNovel(Novel): void
+        }
+    }
 
-class NovelLoader {
-    - NovelRepository repository
-    + NovelLoader(Context context)
-    + List<Novel> loadInBackground()
-}
+    package Fragments {
+        class NovelDetailFragment {
+            - TextView textViewTitle
+            - TextView textViewAuthor
+            - TextView textViewYear
+            - TextView textViewSynopsis
+            + newInstance(Novel): NovelDetailFragment
+        }
 
-class Novel {
-    - String id
-    - String title
-    - String author
-    - int year
-    - String synopsis
-    - boolean favorite
-    + Getters and Setters
-}
+        class NovelListFragment {
+            - RecyclerView recyclerView
+            - NovelAdapter novelAdapter
+            - NovelViewModel novelViewModel
+            + onNovelSelected(Novel): void
+        }
+    }
 
-class NovelAdapter {
-    - List<Novel> novels
-    - OnDeleteClickListener deleteListener
-    - Context context
-    - FirebaseFirestore db
-    + void setNovels(List<Novel> novels)
-    + void updateFavoriteStatus(Novel novel)
-}
+    package Novelas {
+        class Novel {
+            - String id
+            - String title
+            - String author
+            - int year
+            - String synopsis
+            - boolean favorite
+            + getId(): String
+            + setId(String): void
+            + getTitle(): String
+            + setTitle(String): void
+            + isFavorite(): boolean
+            + setFavorite(boolean): void
+        }
 
-interface OnDeleteClickListener {
-    + void onDeleteClick(Novel novel)
-}
+        class NovelAdapter {
+            - List<Novel> novels
+            - OnDeleteClickListener deleteListener
+            - OnItemClickListener itemClickListener
+            - FirebaseFirestore db
+            + setNovels(List<Novel>): void
+            + updateFavoriteStatus(Novel): void
+        }
 
-class SyncDataTask {
-    - Context context
-    - FirebaseFirestore db
-    + SyncDataTask(Context context)
-    + Void doInBackground(Void... voids)
-}
+        class NovelLoader {
+            - NovelRepository repository
+            + loadInBackground(): List<Novel>
+        }
 
-class SyncDataReceiver {
-    + void onReceive(Context context, Intent intent)
-}
+        class NovelRepository {
+            - FirebaseFirestore db
+            + getAllNovels(): LiveData<List<Novel>>
+            + insert(Novel): void
+            + delete(Novel): void
+        }
 
-class SyncAlarmReceiver {
-    + void onReceive(Context context, Intent intent)
-}
+        class NovelViewModel {
+            - NovelRepository repository
+            - LiveData<List<Novel>> allNovels
+            + insert(Novel): void
+            + delete(Novel): void
+            + syncNovels(): void
+        }
+    }
 
-class ConnectivityReceiver {
-    + void onReceive(Context context, Intent intent)
-}
+    package Sync {
+        class ConnectivityReceiver
+        class NetworkUtil
+        class NotificationHelper
+        class SyncAlarmReceiver
+        class SyncDataReceiver
+        class SyncDataTask
+        class SyncUtils
+    }
 
-class NotificationHelper {
-    + static void showNotification(Context context, String title, String content)
-}
+    package Widget {
+        class NewAppWidget {
+            + onUpdate(Context, AppWidgetManager, int[]): void
+        }
 
-class NetworkUtil {
-    + static boolean isConnectedToWifi(Context context)
-}
+        class NovelRemoteViewsFactory {
+            - List<Novel> favoriteNovels
+            + loadFavoriteNovels(): void
+            + getViewAt(int): RemoteViews
+        }
 
-MainActivity --> NovelViewModel
-MainActivity --> NovelAdapter
-MainActivity o--> BroadcastReceiver : registers
-NovelViewModel --> NovelRepository
-NovelLoader --> NovelRepository
-NovelAdapter --> Novel
-NovelAdapter ..> FirebaseFirestore
-SyncDataTask ..> FirebaseFirestore
-SyncDataReceiver --> NotificationHelper
-SyncAlarmReceiver --> SyncDataTask
-ConnectivityReceiver --> SyncDataTask
-NetworkUtil ..> ConnectivityManager
+        class WidgetService {
+            + onGetViewFactory(Intent): RemoteViewsFactory
+        }
+    }
+
+    MainActivity --> Fragments.NovelListFragment
+    Fragments.NovelListFragment --> Novelas.NovelAdapter
+    Fragments.NovelListFragment --> Novelas.NovelViewModel
+    Fragments.NovelDetailFragment <-- MainActivity
+    Novelas.NovelAdapter --> Novelas.Novel
+    Novelas.NovelLoader --> Novelas.NovelRepository
+    Novelas.NovelRepository --> Novelas.Novel
+    Widget.NewAppWidget --> Widget.WidgetService
+    Widget.WidgetService --> Widget.NovelRemoteViewsFactory
+    Widget.NovelRemoteViewsFactory --> Novelas.Novel
+
+}
 @enduml

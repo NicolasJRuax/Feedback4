@@ -1,6 +1,9 @@
 package com.myproyect.gestornovelasnjr.gestor_novelas.Novelas;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +14,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.myproyect.gestornovelasnjr.R;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.myproyect.gestornovelasnjr.gestor_novelas.Widget.NewAppWidget;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,9 +69,15 @@ public class NovelAdapter extends RecyclerView.Adapter<NovelAdapter.NovelHolder>
         });
 
         holder.buttonFavorite.setOnClickListener(v -> {
+            if (currentNovel.getId() == null) {
+                Log.e("Firestore", "ID de la novela es nulo; no se puede actualizar el estado de favorito.");
+                Toast.makeText(context, "Error: ID de novela es nulo", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             boolean isFavorite = !currentNovel.isFavorite();
             currentNovel.setFavorite(isFavorite);
-            updateFavoriteStatus(currentNovel);
+            updateFavoriteStatus(currentNovel); // Intentar actualizar el estado en Firestore
 
             if (isFavorite) {
                 holder.buttonFavorite.setImageResource(android.R.drawable.btn_star_big_on);
@@ -76,6 +87,8 @@ public class NovelAdapter extends RecyclerView.Adapter<NovelAdapter.NovelHolder>
                 Toast.makeText(context, currentNovel.getTitle() + " eliminado de favoritos", Toast.LENGTH_SHORT).show();
             }
         });
+
+
 
         holder.buttonDetails.setOnClickListener(v -> {
             if (itemClickListener != null) {
@@ -96,18 +109,25 @@ public class NovelAdapter extends RecyclerView.Adapter<NovelAdapter.NovelHolder>
 
     private void updateFavoriteStatus(Novel novel) {
         if (novel.getId() != null) {
+            Log.d("Firestore", "Actualizando estado de favorito para la novela con ID: " + novel.getId());
+
             db.collection("novels").document(novel.getId())
                     .update("favorite", novel.isFavorite())
                     .addOnSuccessListener(aVoid -> {
-                        // Success
+                        Log.d("Firestore", "Estado de favorito actualizado correctamente en Firestore.");
                     })
                     .addOnFailureListener(e -> {
+                        Log.e("Firestore", "Error al actualizar el estado de favorito", e);
                         Toast.makeText(context, "Error al actualizar favorito", Toast.LENGTH_SHORT).show();
                     });
         } else {
+            Log.e("Firestore", "No se puede actualizar el estado de favorito: ID de novela es nulo");
             Toast.makeText(context, "No se pudo actualizar el estado de favorito", Toast.LENGTH_SHORT).show();
         }
     }
+
+
+
 
     class NovelHolder extends RecyclerView.ViewHolder {
         private TextView textViewTitle;

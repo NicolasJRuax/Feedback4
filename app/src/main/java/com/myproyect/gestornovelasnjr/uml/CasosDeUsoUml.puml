@@ -1,23 +1,17 @@
 @startuml
-left to right direction
-actor Usuario
+actor User
 
-usecase "Agregar Novela" as UC_Add
-usecase "Eliminar Novela" as UC_Delete
-usecase "Ver Detalles de Novela" as UC_Details
-usecase "Marcar como Favorito" as UC_Favorite
-usecase "Sincronizar Datos Manualmente" as UC_SyncManual
-usecase "Recibir Notificaciones" as UC_Notifications
-usecase "Sincronización Automática" as UC_SyncAuto
-usecase "Sincronización Periódica" as UC_SyncPeriodic
+package "Gestor de Novelas" {
+    usecase "Agregar novela a favoritos" as UC_Fav
+    usecase "Eliminar novela de favoritos" as UC_Unfav
+    usecase "Sincronizar datos" as UC_Sync
+    usecase "Visualizar detalles de la novela" as UC_Details
+    usecase "Ver lista de novelas favoritas en widget" as UC_Widget
+}
 
-Usuario --> UC_Add
-Usuario --> UC_Delete
-Usuario --> UC_Details
-Usuario --> UC_Favorite
-Usuario --> UC_SyncManual
-Usuario <-- UC_Notifications
-
-UC_SyncAuto <-- (Sistema)
-UC_SyncPeriodic <-- (Sistema)
+User --> UC_Fav
+User --> UC_Unfav
+User --> UC_Sync
+User --> UC_Details
+User --> UC_Widget
 @enduml

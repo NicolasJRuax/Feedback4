@@ -32,11 +32,15 @@ public class NovelRepository {
                 List<Novel> novels = new ArrayList<>();
                 for (DocumentSnapshot document : querySnapshot.getDocuments()) {
                     Novel novel = document.toObject(Novel.class);
-                    novels.add(novel);
+                    if (novel != null) {
+                        novel.setId(document.getId()); // Asigna el ID de Firestore al objeto Novel
+                        novels.add(novel);
+                    }
                 }
                 novelsLiveData.setValue(novels);
             }
         });
+
 
         return novelsLiveData;
     }

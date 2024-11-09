@@ -1,9 +1,14 @@
 package com.myproyect.gestornovelasnjr.gestor_novelas.Widget;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
+
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.myproyect.gestornovelasnjr.R;
 import com.myproyect.gestornovelasnjr.gestor_novelas.Novelas.Novel;
 import java.util.ArrayList;
@@ -75,10 +80,28 @@ public class NovelRemoteViewsFactory implements RemoteViewsService.RemoteViewsFa
     }
 
     private void loadFavoriteNovels() {
-        favoriteNovels.clear();
-        // Load favorite novels from local storage or cache
-        // For example purposes, adding dummy data
-        favoriteNovels.add(new Novel("1", "Novela Favorita 1", "Autor 1", 2020, "Sinopsis 1", true));
-        favoriteNovels.add(new Novel("2", "Novela Favorita 2", "Autor 2", 2021, "Sinopsis 2", true));
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("novels")
+                .whereEqualTo("favorite", true) // Solo favoritos
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        favoriteNovels.clear();
+                        for (DocumentSnapshot document : task.getResult()) {
+                            Novel novel = document.toObject(Novel.class);
+                            favoriteNovels.add(novel);
+                        }
+
+                        // Notificar al AppWidgetManager que la lista ha cambiado
+                        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+                        ComponentName widget = new ComponentName(context, NewAppWidget.class);
+                        int[] appWidgetIds = appWidgetManager.getAppWidgetIds(widget);
+
+                        // Notificar el cambio en todos los widgets activos de este tipo
+                        appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.widget_listview);
+                    }
+                });
     }
+
+
 }
